@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, SlidersHorizontal, Sparkles, Mic, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, Sparkles, Mic } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 
@@ -185,22 +185,6 @@ function HomePage() {
             ))}
           </motion.div>
 
-          {/* Bouncing Scroll Down Indicator */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 1 }}
-            className="mx-auto mt-16 flex justify-center"
-          >
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/50 shadow-soft border border-border/40 backdrop-blur">
-                <ChevronDown className="h-6 w-6 text-primary" />
-              </div>
-            </motion.div>
-          </motion.div>
         </div>
       </section>
 
