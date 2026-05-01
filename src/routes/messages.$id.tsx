@@ -121,7 +121,15 @@ function ChatRoom() {
           "id",
           unread.map((m) => m.id),
         );
-      if (error) console.error("Error marking messages as read:", error);
+      if (error) {
+        console.error("Error marking messages as read:", error);
+      } else {
+        // Optimistically update local state for faster feedback if we are the recipient
+        // though we don't show checkmarks for incoming messages, this keeps the state in sync
+        setMessages((prev) => 
+          prev.map((m) => unread.find(u => u.id === m.id) ? { ...m, read_at: new Date().toISOString() } : m)
+        );
+      }
     };
     markAsRead();
   }, [messages, user]);
@@ -242,12 +250,12 @@ function ChatRoom() {
                       {mine && (
                         <span className="flex items-center gap-0.5">
                           {m.read_at ? (
-                            <svg className="h-3 w-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <svg className="h-3.5 w-3.5 text-[#3b82f6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M18 6L7 17l-5-5" />
                               <path d="M22 10L13 19l-5-5" />
                             </svg>
                           ) : (
-                            <svg className="h-3 w-3 text-brand-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <svg className="h-3.5 w-3.5 text-brand-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M20 6L9 17l-5-5" />
                             </svg>
                           )}
