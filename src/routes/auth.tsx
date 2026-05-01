@@ -46,25 +46,31 @@ function AuthPage() {
     if (user) navigate({ to: search.redirect, replace: true });
   }, [user, navigate, search.redirect]);
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    
     if (mode === "phone") {
       if (!showOtp) {
-        // Send OTP
+        // Send Email OTP
         const { error } = await supabase.auth.signInWithOtp({
-          phone: phone.startsWith("+") ? phone : `+91${phone}`, // Default to India if no prefix
+          email: email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+          }
         });
         if (error) {
           toast.error(error.message);
         } else {
           setShowOtp(true);
-          toast.success("OTP sent to your phone!");
+          toast.success("OTP sent to your email!");
         }
       } else {
-        // Verify OTP
+        // Verify Email OTP
         const { error } = await supabase.auth.verifyOtp({
-          phone: phone.startsWith("+") ? phone : `+91${phone}`,
+          email: email,
           token: otp,
-          type: "sms",
+          type: "email",
         });
         if (error) {
           toast.error(error.message);
@@ -163,19 +169,19 @@ function AuthPage() {
             <>
               {!showOtp ? (
                 <div className="space-y-1.5">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="email_otp">Email Address</Label>
                   <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+91 99999 99999"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    id="email_otp"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
               ) : (
                 <div className="space-y-1.5 text-center">
-                  <Label htmlFor="otp">Enter 6-digit OTP</Label>
+                  <Label htmlFor="otp">Enter 6-digit OTP from your Email</Label>
                   <Input
                     id="otp"
                     type="text"
@@ -257,7 +263,7 @@ function AuthPage() {
               }}
               className="font-semibold text-muted-foreground hover:text-primary transition-colors"
             >
-              {mode === "phone" ? "Sign in with Email" : "Sign in with Phone Number"}
+              {mode === "phone" ? "Sign in with Password" : "Sign in with Email OTP (No Password)"}
             </button>
           </div>
         </form>
