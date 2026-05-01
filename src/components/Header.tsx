@@ -54,16 +54,15 @@ export function Header() {
     
     fetchUnread();
 
-    // Listen for new messages
+    // Listen for changes
     const channel = supabase
       .channel('header-notifications')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        (payload) => {
-          if (payload.new.sender_id !== user.id) {
-            setUnreadCount(prev => prev + 1);
-          }
+        { event: '*', schema: 'public', table: 'messages' },
+        () => {
+          // Re-fetch count on any change (INSERT, UPDATE, DELETE)
+          fetchUnread();
         }
       )
       .subscribe();
