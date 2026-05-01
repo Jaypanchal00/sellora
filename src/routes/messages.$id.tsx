@@ -113,13 +113,15 @@ function ChatRoom() {
     if (unread.length === 0) return;
 
     const markAsRead = async () => {
-      await supabase
+      console.log("Marking messages as read:", unread.length);
+      const { error } = await supabase
         .from("messages")
         .update({ read_at: new Date().toISOString() })
         .in(
           "id",
           unread.map((m) => m.id),
         );
+      if (error) console.error("Error marking messages as read:", error);
     };
     markAsRead();
   }, [messages, user]);
@@ -238,8 +240,17 @@ function ChatRoom() {
                         })}
                       </span>
                       {mine && (
-                        <span className="font-medium">
-                          {m.read_at ? "Seen" : "Sent"}
+                        <span className="flex items-center gap-0.5">
+                          {m.read_at ? (
+                            <svg className="h-3 w-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 6L7 17l-5-5" />
+                              <path d="M22 10L13 19l-5-5" />
+                            </svg>
+                          ) : (
+                            <svg className="h-3 w-3 text-brand-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                          )}
                         </span>
                       )}
                     </div>
