@@ -11,7 +11,34 @@ async function start() {
     const { default: entry } = await import('./dist/server/server.js');
     console.log('Server entry loaded successfully.');
 
+    const clientDir = join(process.cwd(), 'dist', 'client');
+
     createServer(async (req, res) => {
+      // 1. Handle static files from dist/client
+      const filePath = join(clientDir, req.url === '/' ? 'index.html' : req.url);
+      try {
+        const stats = await import('node:fs/promises').then(fs => fs.stat(filePath));
+        if (stats.isFile()) {
+          const content = await import('node:fs/promises').then(fs => fs.readFile(filePath));
+          const ext = filePath.split('.').pop();
+          const mimeTypes = {
+            html: 'text/html',
+            js: 'application/javascript',
+            css: 'text/css',
+            png: 'image/png',
+            jpg: 'image/jpeg',
+            svg: 'image/svg+xml',
+            ico: 'image/x-icon',
+          };
+          res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+          res.end(content);
+          return;
+        }
+      } catch (e) {
+        // Not a static file, continue to TanStack handler
+      }
+
+      // 2. Handle TanStack Start request
       const protocol = req.headers['x-forwarded-proto'] || 'http';
       const host = req.headers.host;
       const url = new URL(req.url, `${protocol}://${host}`);
@@ -28,7 +55,6 @@ async function start() {
         
         res.statusCode = response.status;
         response.headers.forEach((value, key) => {
-          // Handle set-cookie specifically if needed, but append works for most
           res.setHeader(key, value);
         });
         
