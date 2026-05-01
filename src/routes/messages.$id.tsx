@@ -113,7 +113,6 @@ function ChatRoom() {
     if (unread.length === 0) return;
 
     const markAsRead = async () => {
-      console.log("Marking messages as read:", unread.length);
       const { error } = await supabase
         .from("messages")
         .update({ read_at: new Date().toISOString() })
@@ -122,7 +121,7 @@ function ChatRoom() {
           unread.map((m) => m.id),
         );
       if (error) {
-        console.error("Error marking messages as read:", error);
+        // Silent fail in production
       } else {
         // Optimistically update local state for faster feedback if we are the recipient
         // though we don't show checkmarks for incoming messages, this keeps the state in sync
