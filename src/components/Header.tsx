@@ -20,10 +20,10 @@ import {
   User as UserIcon,
   LayoutDashboard,
   LogOut,
-  Search,
-  ChevronDown,
+  Compass,
 } from "lucide-react";
 import logo from "@/assets/sellora-logo.png";
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,6 +37,8 @@ export function Header() {
 
   useEffect(() => {
     if (!user) return;
+
+    // Fetch initial unread messages count
     const fetchUnread = async () => {
       const { data, error } = await supabase
         .from("messages")
@@ -44,84 +46,155 @@ export function Header() {
         .is("read_at", null)
         .neq("sender_id", user.id)
         .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`, { foreignTable: "conversations" });
-      if (!error && data) setUnreadCount(data.length);
+
+      if (!error && data) {
+        setUnreadCount(data.length);
+      }
     };
+
     fetchUnread();
-    const channel = supabase.channel("header-notifications").on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => fetchUnread()).subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Listen for changes
+    const channel = supabase
+      .channel("header-notifications")
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
+        // Re-fetch count on any change (INSERT, UPDATE, DELETE)
+        fetchUnread();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-white shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center gap-4 md:gap-8">
-          {/* Logo */}
-          <Link to="/" className="flex shrink-0 items-center gap-2">
-            <img src={logo} alt="Sellora" className="h-8 w-auto md:h-10" />
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur-xl">
+      <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
+        <Link to="/" className="flex items-center gap-2 group transition-all duration-300">
+          <span className="font-display text-2xl font-black tracking-tighter uppercase">
+            <span className="text-gradient-brand">Sellora</span>
+          </span>
+        </Link>
+
+        <nav className="hidden items-center gap-1 md:flex">
+          <Link
+            to="/"
+            className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-base hover:bg-muted hover:text-foreground"
+          >
+            Browse
           </Link>
-
-          {/* Search Bar - OLX Style */}
-          <div className="hidden flex-1 items-center gap-3 lg:flex">
-            <div className="relative flex h-11 w-64 items-center rounded-sm border-2 border-primary bg-white px-3">
-              <Search className="mr-2 h-5 w-5 text-primary" />
-              <input type="text" placeholder="India" className="w-full text-sm font-medium outline-none" />
-              <ChevronDown className="ml-2 h-5 w-5 text-primary" />
-            </div>
-            <div className="relative flex h-11 flex-1 items-center rounded-sm border-2 border-primary bg-white px-3 overflow-hidden">
-              <input type="text" placeholder="Find Cars, Mobile Phones and more..." className="w-full text-sm font-medium outline-none" />
-              <button className="flex h-11 w-11 items-center justify-center bg-primary text-white -mr-3">
-                <Search className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-1 items-center justify-end gap-4 md:gap-6">
-            <Button variant="ghost" size="icon" onClick={toggle} className="rounded-full h-10 w-10">
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5 text-primary" />}
-            </Button>
-
-            {!user ? (
-              <button 
-                onClick={() => navigate({ to: "/auth", search: { redirect: "/" } })}
-                className="text-sm font-bold border-b-2 border-transparent hover:border-primary transition-all text-primary"
+          {user && (
+            <>
+              <Link
+                to="/messages"
+                className="relative flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-base hover:bg-muted hover:text-foreground"
               >
-                Login
-              </button>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 group">
-                    <Avatar className="h-8 w-8 ring-2 ring-transparent transition-all group-hover:ring-primary/20">
-                      <AvatarImage src={user.user_metadata?.avatar_url} />
-                      <AvatarFallback className="bg-primary text-white text-xs font-bold">{initial}</AvatarFallback>
-                    </Avatar>
-                    <ChevronDown className="h-4 w-4 text-primary" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-2">
-                  <DropdownMenuLabel className="truncate text-xs text-muted-foreground">{user.email}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate({ to: "/profile" })}><UserIcon className="mr-2 h-4 w-4" /> Profile</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate({ to: "/messages" })} className="relative">
-                    <MessageCircle className="mr-2 h-4 w-4" /> Chat
-                    {unreadCount > 0 && <span className="absolute right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">{unreadCount}</span>}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate({ to: "/wishlist" })}><Heart className="mr-2 h-4 w-4" /> Wishlist</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={async () => { await signOut(); navigate({ to: "/" }); }} className="text-red-500 focus:text-red-500"><LogOut className="mr-2 h-4 w-4" /> Sign out</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                <MessageCircle className="h-4 w-4" /> Chat
+                {unreadCount > 0 && (
+                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+              <Link
+                to="/wishlist"
+                className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-base hover:bg-muted hover:text-foreground"
+              >
+                <Heart className="h-4 w-4" /> Wishlist
+              </Link>
+            </>
+          )}
+        </nav>
 
-            <button
-              onClick={() => navigate({ to: user ? "/sell" : "/auth", search: user ? undefined : { redirect: "/sell" } })}
-              className="group relative flex h-11 items-center gap-1 rounded-full border-4 border-l-yellow-400 border-t-yellow-400 border-r-blue-500 border-b-blue-500 bg-white px-5 font-black text-primary shadow-sm transition-all hover:shadow-md active:scale-95"
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle}
+            aria-label="Toggle theme"
+            className="rounded-full"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            onClick={() =>
+              navigate({
+                to: user ? "/sell" : "/auth",
+                search: user ? undefined : { redirect: "/sell" },
+              })
+            }
+            className="hidden rounded-full bg-gradient-brand text-brand-foreground shadow-glow transition-base hover:opacity-95 sm:inline-flex"
+          >
+            <Plus className="mr-1 h-4 w-4" /> Sell
+          </Button>
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="rounded-full ring-2 ring-transparent transition-base hover:ring-primary/40">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={user.user_metadata?.avatar_url} />
+                    <AvatarFallback className="bg-gradient-brand text-brand-foreground font-semibold">
+                      {initial}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
+                  <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/profile" })}>
+                  <UserIcon className="mr-2 h-4 w-4" /> Profile
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="md:hidden" />
+                <DropdownMenuItem onClick={() => navigate({ to: "/" })} className="md:hidden">
+                  <Compass className="mr-2 h-4 w-4" /> Browse
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/messages" })}
+                  className="md:hidden"
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" /> Chat
+                  {unreadCount > 0 && (
+                    <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/wishlist" })}
+                  className="md:hidden"
+                >
+                  <Heart className="mr-2 h-4 w-4" /> Wishlist
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/sell" })} className="md:hidden">
+                  <Plus className="mr-2 h-4 w-4" /> Sell something
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={async () => {
+                    await signOut();
+                    navigate({ to: "/" });
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => navigate({ to: "/auth", search: { redirect: "/" } })}
+              className="rounded-full"
             >
-              <Plus className="h-5 w-5" />
-              <span className="text-sm font-bold uppercase tracking-wide">Sell</span>
-            </button>
-          </div>
+              Sign in
+            </Button>
+          )}
         </div>
       </div>
     </header>
