@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { Readable } from 'node:stream';
+import { join } from 'node:path';
 
 // Standard Node-to-Web adapter for TanStack Start
 const port = process.env.PORT || 10000;
@@ -8,7 +9,15 @@ async function start() {
   console.log('Starting Sellora server...');
   
   try {
-    const { default: entry } = await import('./dist/server/server.js');
+    let serverPath = join(process.cwd(), 'dist', 'server', 'server.js');
+    try {
+      await import('node:fs/promises').then(fs => fs.access(serverPath));
+    } catch (e) {
+      serverPath = join(process.cwd(), 'dist', 'server', 'index.js');
+    }
+    
+    console.log(`Loading server from: ${serverPath}`);
+    const { default: entry } = await import(serverPath);
     console.log('Server entry loaded successfully.');
 
     const clientDir = join(process.cwd(), 'dist', 'client');
