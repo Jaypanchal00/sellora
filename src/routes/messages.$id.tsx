@@ -85,14 +85,19 @@ function ChatRoom() {
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "messages",
           filter: `conversation_id=eq.${conv.id}`,
         },
         (payload) => {
-          const msg = payload.new as Tables<"messages">;
-          setMessages((prev) => (prev.find((m) => m.id === msg.id) ? prev : [...prev, msg]));
+          if (payload.eventType === "INSERT") {
+            const msg = payload.new as Tables<"messages">;
+            setMessages((prev) => (prev.find((m) => m.id === msg.id) ? prev : [...prev, msg]));
+          } else if (payload.eventType === "UPDATE") {
+            const msg = payload.new as Tables<"messages">;
+            setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+          }
         },
       )
       .subscribe();
@@ -100,6 +105,24 @@ function ChatRoom() {
       supabase.removeChannel(channel);
     };
   }, [conv, user]);
+
+  // Mark messages as read when they appear
+  useEffect(() => {
+    if (!user || messages.length === 0) return;
+    const unread = messages.filter((m) => m.sender_id !== user.id && !m.read_at);
+    if (unread.length === 0) return;
+
+    const markAsRead = async () => {
+      await supabase
+        .from("messages")
+        .update({ read_at: new Date().toISOString() })
+        .in(
+          "id",
+          unread.map((m) => m.id),
+        );
+    };
+    markAsRead();
+  }, [messages, user]);
 
   // Autoscroll on new messages
   useEffect(() => {
@@ -202,17 +225,24 @@ function ChatRoom() {
                     )}
                   >
                     <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                    <p
+                    <div
                       className={cn(
-                        "mt-1 text-[10px]",
+                        "mt-1 flex items-center justify-between gap-2 text-[10px]",
                         mine ? "text-brand-foreground/70" : "text-muted-foreground",
                       )}
                     >
-                      {new Date(m.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+                      <span>
+                        {new Date(m.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      {mine && (
+                        <span className="font-medium">
+                          {m.read_at ? "Seen" : "Sent"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

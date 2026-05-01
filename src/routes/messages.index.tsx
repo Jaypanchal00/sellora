@@ -20,6 +20,7 @@ interface ConvWithDetails {
   listing: { id: string; title: string; images: string[] } | null;
   other_profile: { id: string; full_name: string | null; avatar_url: string | null } | null;
   last_message: string | null;
+  last_message_unread: boolean;
 }
 
 function MessagesIndex() {
@@ -58,7 +59,7 @@ function MessagesIndex() {
         supabase.from("profiles").select("id, full_name, avatar_url").in("id", otherIds),
         supabase
           .from("messages")
-          .select("conversation_id, content, created_at")
+          .select("conversation_id, content, created_at, sender_id, read_at")
           .in(
             "conversation_id",
             convsData.map((c) => c.id),
@@ -66,9 +67,14 @@ function MessagesIndex() {
           .order("created_at", { ascending: false }),
       ]);
 
-      const lastByConv = new Map<string, string>();
+      const lastByConv = new Map<string, { content: string; unread: boolean }>();
       lastMsgs?.forEach((m) => {
-        if (!lastByConv.has(m.conversation_id)) lastByConv.set(m.conversation_id, m.content);
+        if (!lastByConv.has(m.conversation_id)) {
+          lastByConv.set(m.conversation_id, {
+            content: m.content,
+            unread: m.sender_id !== user.id && !m.read_at,
+          });
+        }
       });
 
       if (!active) return;
@@ -79,7 +85,8 @@ function MessagesIndex() {
           other_profile:
             profiles?.find((p) => p.id === (c.buyer_id === user.id ? c.seller_id : c.buyer_id)) ??
             null,
-          last_message: lastByConv.get(c.id) ?? null,
+          last_message: lastByConv.get(c.id)?.content ?? null,
+          last_message_unread: lastByConv.get(c.id)?.unread ?? false,
         })),
       );
       setLoading(false);
@@ -140,9 +147,14 @@ function MessagesIndex() {
                       <p className="truncate font-semibold">
                         {c.other_profile?.full_name ?? "User"}
                       </p>
-                      <span className="text-xs text-muted-foreground">
-                        {formatRelativeTime(c.last_message_at)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {formatRelativeTime(c.last_message_at)}
+                        </span>
+                        {c.last_message_unread && (
+                          <div className="h-2 w-2 rounded-full bg-primary shadow-glow" />
+                        )}
+                      </div>
                     </div>
                     <p className="truncate text-sm text-muted-foreground">
                       <span className="text-foreground">{c.listing?.title ?? "Listing"}</span>
