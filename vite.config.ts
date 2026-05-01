@@ -6,12 +6,5 @@
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-export default defineConfig({
-  vite: {
-    preview: {
-      allowedHosts: true,
-      host: true,
-      port: Number(process.env.PORT) || 4173
-    }
-  }
-});
+export default defineConfig();
+
