@@ -65,11 +65,18 @@ function DashboardPage() {
 
   const handleMarkSold = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === "active" ? "sold" : "active";
-    const { error } = await supabase.from("listings").update({ status: newStatus as Tables<"listings">["status"] }).eq("id", id);
+    const { error } = await supabase
+      .from("listings")
+      .update({ status: newStatus as Tables<"listings">["status"] })
+      .eq("id", id);
     if (error) {
       toast.error("Couldn't update status");
     } else {
-      setListings((p) => p.map((l) => l.id === id ? { ...l, status: newStatus as Tables<"listings">["status"] } : l));
+      setListings((p) =>
+        p.map((l) =>
+          l.id === id ? { ...l, status: newStatus as Tables<"listings">["status"] } : l,
+        ),
+      );
       toast.success(newStatus === "sold" ? "Marked as sold!" : "Listing reactivated");
     }
   };

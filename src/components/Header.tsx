@@ -37,34 +37,30 @@ export function Header() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     // Fetch initial unread messages count
     const fetchUnread = async () => {
       const { data, error } = await supabase
-        .from('messages')
+        .from("messages")
         .select(`id, conversations!inner(buyer_id, seller_id)`)
-        .is('read_at', null)
-        .neq('sender_id', user.id)
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`, { foreignTable: 'conversations' });
-        
+        .is("read_at", null)
+        .neq("sender_id", user.id)
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`, { foreignTable: "conversations" });
+
       if (!error && data) {
         setUnreadCount(data.length);
       }
     };
-    
+
     fetchUnread();
 
     // Listen for changes
     const channel = supabase
-      .channel('header-notifications')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'messages' },
-        () => {
-          // Re-fetch count on any change (INSERT, UPDATE, DELETE)
-          fetchUnread();
-        }
-      )
+      .channel("header-notifications")
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
+        // Re-fetch count on any change (INSERT, UPDATE, DELETE)
+        fetchUnread();
+      })
       .subscribe();
 
     return () => {
@@ -160,7 +156,10 @@ export function Header() {
                 <DropdownMenuItem onClick={() => navigate({ to: "/" })} className="md:hidden">
                   <Compass className="mr-2 h-4 w-4" /> Browse
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate({ to: "/messages" })} className="md:hidden">
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/messages" })}
+                  className="md:hidden"
+                >
                   <MessageCircle className="mr-2 h-4 w-4" /> Chat
                   {unreadCount > 0 && (
                     <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -168,7 +167,10 @@ export function Header() {
                     </span>
                   )}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate({ to: "/wishlist" })} className="md:hidden">
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: "/wishlist" })}
+                  className="md:hidden"
+                >
                   <Heart className="mr-2 h-4 w-4" /> Wishlist
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate({ to: "/sell" })} className="md:hidden">

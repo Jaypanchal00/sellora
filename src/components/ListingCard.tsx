@@ -50,7 +50,7 @@ export function ListingCard({ listing, isWishlisted, onToggleWishlist }: Listing
           </div>
         )}
       </div>
-      
+
       <div className="flex flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-1 font-semibold text-foreground md:text-lg">{listing.title}</h3>

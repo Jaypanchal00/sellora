@@ -6,8 +6,6 @@ export default defineConfig({
     preset: "node-server",
   },
   vite: {
-    plugins: [
-      tsconfigPaths(),
-    ],
+    plugins: [tsconfigPaths()],
   },
 });

@@ -26,7 +26,7 @@ function ListingDetail() {
   const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
   const [chatLoading, setChatLoading] = useState(false);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
   const [similarListings, setSimilarListings] = useState<Tables<"listings">[]>([]);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ function ListingDetail() {
         .eq("id", data.seller_id)
         .maybeSingle();
       if (active) setSeller(prof);
-      
+
       const { data: revs } = await supabase
         .from("reviews")
         .select("*")
@@ -261,10 +261,13 @@ function ListingDetail() {
               <div className="flex-1">
                 <p className="font-semibold">{seller?.full_name ?? "Seller"}</p>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Member since {seller ? new Date(seller.created_at).toLocaleDateString() : "—"}</span>
+                  <span>
+                    Member since {seller ? new Date(seller.created_at).toLocaleDateString() : "—"}
+                  </span>
                   {reviews.length > 0 && (
                     <span className="flex items-center gap-0.5 text-yellow-500 font-medium">
-                      ⭐ {(reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1)} ({reviews.length})
+                      ⭐ {(reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1)} (
+                      {reviews.length})
                     </span>
                   )}
                 </div>
@@ -282,11 +285,11 @@ function ListingDetail() {
                 {user?.id === listing.seller_id ? "Your listing" : "Chat"}
               </Button>
               {user?.id !== listing.seller_id && (
-                <OfferDialog 
-                  listing={listing} 
+                <OfferDialog
+                  listing={listing}
                   sellerId={listing.seller_id}
-                  chatLoading={chatLoading} 
-                  onChatStarted={() => setChatLoading(true)} 
+                  chatLoading={chatLoading}
+                  onChatStarted={() => setChatLoading(true)}
                 />
               )}
               <Button
@@ -306,10 +309,14 @@ function ListingDetail() {
                 <Share2 className="h-4 w-4 text-primary" />
               </Button>
             </div>
-            
+
             <div className="flex justify-end pt-2">
-              <button 
-                onClick={() => toast.success("Report submitted. Our trust & safety team will review this listing shortly.")}
+              <button
+                onClick={() =>
+                  toast.success(
+                    "Report submitted. Our trust & safety team will review this listing shortly.",
+                  )
+                }
                 className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
               >
                 🚩 Report this listing
@@ -321,10 +328,10 @@ function ListingDetail() {
               <div className="pt-4 border-t border-border/60">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-display font-bold">Reviews</h3>
-                  <ReviewDialog 
-                    targetId={listing.seller_id} 
-                    listingId={listing.id} 
-                    onSuccess={(newReview) => setReviews([newReview, ...reviews])} 
+                  <ReviewDialog
+                    targetId={listing.seller_id}
+                    listingId={listing.id}
+                    onSuccess={(newReview) => setReviews([newReview, ...reviews])}
                   />
                 </div>
                 {reviews.length === 0 ? (
@@ -332,9 +339,14 @@ function ListingDetail() {
                 ) : (
                   <div className="space-y-3">
                     {reviews.slice(0, 3).map((r) => (
-                      <div key={r.id} className="text-sm border border-border/60 rounded-xl p-3 bg-muted/30">
+                      <div
+                        key={r.id}
+                        className="text-sm border border-border/60 rounded-xl p-3 bg-muted/30"
+                      >
                         <div className="flex items-center gap-1 mb-1 text-yellow-500">
-                          {Array.from({ length: r.rating }).map((_, i) => <span key={i}>⭐</span>)}
+                          {Array.from({ length: r.rating }).map((_, i) => (
+                            <span key={i}>⭐</span>
+                          ))}
                         </div>
                         <p className="text-foreground">{r.comment}</p>
                       </div>
@@ -367,7 +379,15 @@ function ListingDetail() {
   );
 }
 
-function ReviewDialog({ targetId, listingId, onSuccess }: { targetId: string; listingId: string; onSuccess: (r: any) => void }) {
+function ReviewDialog({
+  targetId,
+  listingId,
+  onSuccess,
+}: {
+  targetId: string;
+  listingId: string;
+  onSuccess: (r: Tables<"reviews">) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -377,17 +397,25 @@ function ReviewDialog({ targetId, listingId, onSuccess }: { targetId: string; li
   const handleSubmit = async () => {
     if (!user) return;
     setSubmitting(true);
-    const { data, error } = await supabase.from('reviews').insert({
-      reviewer_id: user.id,
-      target_id: targetId,
-      listing_id: listingId,
-      rating,
-      comment
-    }).select().single();
+    const { data, error } = await supabase
+      .from("reviews")
+      .insert({
+        reviewer_id: user.id,
+        target_id: targetId,
+        listing_id: listingId,
+        rating,
+        comment,
+      })
+      .select()
+      .single();
 
     setSubmitting(false);
     if (error) {
-      toast.error(error.message.includes('unique') ? "You already reviewed this user for this item." : "Failed to submit review");
+      toast.error(
+        error.message.includes("unique")
+          ? "You already reviewed this user for this item."
+          : "Failed to submit review",
+      );
     } else {
       toast.success("Review submitted!");
       setOpen(false);
@@ -397,7 +425,12 @@ function ReviewDialog({ targetId, listingId, onSuccess }: { targetId: string; li
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="rounded-full text-xs">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setOpen(true)}
+        className="rounded-full text-xs"
+      >
         Leave a Review
       </Button>
       {open && (
@@ -406,10 +439,13 @@ function ReviewDialog({ targetId, listingId, onSuccess }: { targetId: string; li
             <h2 className="font-display text-xl font-bold mb-4">Rate the Seller</h2>
             <div className="flex gap-2 mb-4 justify-center">
               {[1, 2, 3, 4, 5].map((star) => (
-                <button 
-                  key={star} 
+                <button
+                  key={star}
                   onClick={() => setRating(star)}
-                  className={cn("text-3xl transition-transform hover:scale-110", rating >= star ? "grayscale-0" : "grayscale opacity-30")}
+                  className={cn(
+                    "text-3xl transition-transform hover:scale-110",
+                    rating >= star ? "grayscale-0" : "grayscale opacity-30",
+                  )}
                 >
                   ⭐
                 </button>
@@ -423,8 +459,18 @@ function ReviewDialog({ targetId, listingId, onSuccess }: { targetId: string; li
               onChange={(e) => setComment(e.target.value)}
             />
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 rounded-full" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button disabled={submitting} className="flex-1 rounded-full bg-gradient-brand text-brand-foreground shadow-glow" onClick={handleSubmit}>
+              <Button
+                variant="outline"
+                className="flex-1 rounded-full"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={submitting}
+                className="flex-1 rounded-full bg-gradient-brand text-brand-foreground shadow-glow"
+                onClick={handleSubmit}
+              >
                 {submitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
@@ -435,7 +481,17 @@ function ReviewDialog({ targetId, listingId, onSuccess }: { targetId: string; li
   );
 }
 
-function OfferDialog({ listing, sellerId, chatLoading, onChatStarted }: { listing: any; sellerId: string; chatLoading: boolean; onChatStarted: () => void }) {
+function OfferDialog({
+  listing,
+  sellerId,
+  chatLoading,
+  onChatStarted,
+}: {
+  listing: Tables<"listings">;
+  sellerId: string;
+  chatLoading: boolean;
+  onChatStarted: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [offerPrice, setOfferPrice] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -509,8 +565,10 @@ function OfferDialog({ listing, sellerId, chatLoading, onChatStarted }: { listin
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
           <div className="bg-card border border-border/60 rounded-3xl p-6 w-full max-w-sm shadow-card relative">
             <h2 className="font-display text-2xl font-bold mb-2">Make an Offer</h2>
-            <p className="text-sm text-muted-foreground mb-5">Seller's price is {formatPrice(Number(listing.price), listing.currency || "USD")}.</p>
-            
+            <p className="text-sm text-muted-foreground mb-5">
+              Seller's price is {formatPrice(Number(listing.price), listing.currency || "USD")}.
+            </p>
+
             <div className="relative mb-5">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
                 {listing.currency === "INR" ? "₹" : listing.currency === "EUR" ? "€" : "$"}
@@ -524,10 +582,20 @@ function OfferDialog({ listing, sellerId, chatLoading, onChatStarted }: { listin
                 onChange={(e) => setOfferPrice(e.target.value)}
               />
             </div>
-            
+
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 rounded-full py-6" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button disabled={submitting || !offerPrice} className="flex-1 rounded-full py-6 bg-gradient-brand text-brand-foreground shadow-glow" onClick={handleMakeOffer}>
+              <Button
+                variant="outline"
+                className="flex-1 rounded-full py-6"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={submitting || !offerPrice}
+                className="flex-1 rounded-full py-6 bg-gradient-brand text-brand-foreground shadow-glow"
+                onClick={handleMakeOffer}
+              >
                 {submitting ? "Sending..." : "Send Offer"}
               </Button>
             </div>

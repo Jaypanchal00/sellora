@@ -6,7 +6,7 @@ export const Route = createFileRoute("/$pageId")({
 
 function GenericPage() {
   const { pageId } = Route.useParams();
-  
+
   const titles: Record<string, string> = {
     about: "About Us",
     careers: "Careers",
@@ -18,7 +18,7 @@ function GenericPage() {
     contact: "Contact Us",
     privacy: "Privacy Policy",
     terms: "Terms of Service",
-    cookies: "Cookie Policy"
+    cookies: "Cookie Policy",
   };
 
   const title = titles[pageId] || "Page Not Found";
@@ -43,11 +43,14 @@ function GenericPage() {
             Welcome to the {title} page. This section is currently being updated.
           </p>
           <p className="mb-4">
-            Sellora is the next-generation marketplace, and we are constantly expanding our platform. 
-            We are working hard to bring you comprehensive and detailed information regarding our {title.toLowerCase()}.
+            Sellora is the next-generation marketplace, and we are constantly expanding our
+            platform. We are working hard to bring you comprehensive and detailed information
+            regarding our {title.toLowerCase()}.
           </p>
           <p>
-            Please check back soon. If you need immediate assistance, feel free to reach out to our support team at <strong>support@sellora.com</strong> or call us at <strong>1-800-SELLORA</strong>.
+            Please check back soon. If you need immediate assistance, feel free to reach out to our
+            support team at <strong>support@sellora.com</strong> or call us at{" "}
+            <strong>1-800-SELLORA</strong>.
           </p>
         </div>
       </div>

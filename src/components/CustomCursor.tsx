@@ -8,13 +8,13 @@ export function CustomCursor() {
 
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
-  
+
   const springConfig = { damping: 20, stiffness: 300, mass: 0.5 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
 
   useEffect(() => {
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice) return;
 
     // Completely hide the default cursor
@@ -24,7 +24,7 @@ export function CustomCursor() {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
       if (!isVisible) setIsVisible(true);
-      
+
       const target = e.target as HTMLElement;
       if (target.closest('button, a, input, select, [role="button"], .category-chip')) {
         setIsHovering(true);
@@ -74,7 +74,7 @@ export function CustomCursor() {
         }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
-      
+
       {/* Center sharp dot */}
       <motion.div
         className="pointer-events-none fixed left-0 top-0 z-[99999] hidden h-2 w-2 rounded-full bg-white md:block mix-blend-difference"

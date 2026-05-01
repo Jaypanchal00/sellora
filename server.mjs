@@ -1,45 +1,45 @@
-import { createServer } from 'node:http';
-import { Readable } from 'node:stream';
-import { join } from 'node:path';
+import { createServer } from "node:http";
+import { Readable } from "node:stream";
+import { join } from "node:path";
 
 // Standard Node-to-Web adapter for TanStack Start
 const port = process.env.PORT || 10000;
 
 async function start() {
-  console.log('Starting Sellora server...');
-  
+  console.log("Starting Sellora server...");
+
   try {
-    let serverPath = join(process.cwd(), 'dist', 'server', 'server.js');
+    let serverPath = join(process.cwd(), "dist", "server", "server.js");
     try {
-      await import('node:fs/promises').then(fs => fs.access(serverPath));
+      await import("node:fs/promises").then((fs) => fs.access(serverPath));
     } catch (e) {
-      serverPath = join(process.cwd(), 'dist', 'server', 'index.js');
+      serverPath = join(process.cwd(), "dist", "server", "index.js");
     }
-    
+
     console.log(`Loading server from: ${serverPath}`);
     const { default: entry } = await import(serverPath);
-    console.log('Server entry loaded successfully.');
+    console.log("Server entry loaded successfully.");
 
-    const clientDir = join(process.cwd(), 'dist', 'client');
+    const clientDir = join(process.cwd(), "dist", "client");
 
     createServer(async (req, res) => {
       // 1. Handle static files from dist/client
-      const filePath = join(clientDir, req.url === '/' ? 'index.html' : req.url);
+      const filePath = join(clientDir, req.url === "/" ? "index.html" : req.url);
       try {
-        const stats = await import('node:fs/promises').then(fs => fs.stat(filePath));
+        const stats = await import("node:fs/promises").then((fs) => fs.stat(filePath));
         if (stats.isFile()) {
-          const content = await import('node:fs/promises').then(fs => fs.readFile(filePath));
-          const ext = filePath.split('.').pop();
+          const content = await import("node:fs/promises").then((fs) => fs.readFile(filePath));
+          const ext = filePath.split(".").pop();
           const mimeTypes = {
-            html: 'text/html',
-            js: 'application/javascript',
-            css: 'text/css',
-            png: 'image/png',
-            jpg: 'image/jpeg',
-            svg: 'image/svg+xml',
-            ico: 'image/x-icon',
+            html: "text/html",
+            js: "application/javascript",
+            css: "text/css",
+            png: "image/png",
+            jpg: "image/jpeg",
+            svg: "image/svg+xml",
+            ico: "image/x-icon",
           };
-          res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+          res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
           res.end(content);
           return;
         }
@@ -48,25 +48,25 @@ async function start() {
       }
 
       // 2. Handle TanStack Start request
-      const protocol = req.headers['x-forwarded-proto'] || 'http';
+      const protocol = req.headers["x-forwarded-proto"] || "http";
       const host = req.headers.host;
       const url = new URL(req.url, `${protocol}://${host}`);
-      
+
       const request = new Request(url, {
         method: req.method,
         headers: req.headers,
-        body: req.method !== 'GET' && req.method !== 'HEAD' ? Readable.toWeb(req) : null,
-        duplex: 'half'
+        body: req.method !== "GET" && req.method !== "HEAD" ? Readable.toWeb(req) : null,
+        duplex: "half",
       });
 
       try {
         const response = await entry.fetch(request);
-        
+
         res.statusCode = response.status;
         response.headers.forEach((value, key) => {
           res.setHeader(key, value);
         });
-        
+
         if (response.body) {
           const reader = response.body.getReader();
           while (true) {
@@ -77,15 +77,15 @@ async function start() {
         }
         res.end();
       } catch (err) {
-        console.error('Request handler error:', err);
+        console.error("Request handler error:", err);
         res.statusCode = 500;
-        res.end('Internal Server Error');
+        res.end("Internal Server Error");
       }
-    }).listen(port, '0.0.0.0', () => {
+    }).listen(port, "0.0.0.0", () => {
       console.log(`Sellora is live at http://0.0.0.0:${port}`);
     });
   } catch (err) {
-    console.error('Failed to load server entry:', err);
+    console.error("Failed to load server entry:", err);
     process.exit(1);
   }
 }

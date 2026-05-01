@@ -39,14 +39,19 @@ function HomePage() {
   const { ids: wishlistIds, toggle: toggleWishlist } = useWishlist();
 
   const handleVoiceSearch = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).SpeechRecognition ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast.error("Your browser doesn't support voice search.");
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
+    recognition.lang = "en-US";
     recognition.onstart = () => setIsListening(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       setSearch(transcript);
@@ -98,13 +103,13 @@ function HomePage() {
       <section className="relative overflow-hidden py-16 md:py-32">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
         <div className="w-full max-w-[1400px] mx-auto px-4 lg:px-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mx-auto max-w-4xl text-center"
           >
-            <motion.span 
+            <motion.span
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -112,7 +117,7 @@ function HomePage() {
             >
               <Sparkles className="h-4 w-4" /> Welcome to the new standard of local commerce
             </motion.span>
-            <motion.h1 
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.7 }}
@@ -120,13 +125,14 @@ function HomePage() {
             >
               Buy, Sell, <span className="text-gradient-brand">Connect.</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.7 }}
               className="mx-auto mt-4 max-w-xl text-base text-muted-foreground md:text-xl leading-relaxed"
             >
-              Sellora is the most beautiful way to discover great deals near you and chat with sellers instantly.
+              Sellora is the most beautiful way to discover great deals near you and chat with
+              sellers instantly.
             </motion.p>
 
             {/* Search bar */}
@@ -148,7 +154,7 @@ function HomePage() {
                 <button
                   type="button"
                   onClick={handleVoiceSearch}
-                  className={`p-2.5 rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-500 animate-pulse scale-110' : 'hover:bg-muted text-muted-foreground hover:text-foreground hover:scale-105'}`}
+                  className={`p-2.5 rounded-full transition-all ${isListening ? "bg-red-500/20 text-red-500 animate-pulse scale-110" : "hover:bg-muted text-muted-foreground hover:text-foreground hover:scale-105"}`}
                   aria-label="Voice Search"
                 >
                   <Mic className="h-5 w-5" />
@@ -165,7 +171,7 @@ function HomePage() {
           </motion.div>
 
           {/* Category chips */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
@@ -184,16 +190,17 @@ function HomePage() {
               </CategoryChip>
             ))}
           </motion.div>
-
         </div>
       </section>
 
       {/* HOW IT WORKS SECTION */}
       <section className="bg-surface/50 py-16">
         <div className="w-full max-w-[1400px] mx-auto px-4 lg:px-8 text-center">
-          <h2 className="mb-10 font-display text-3xl font-extrabold tracking-tight md:text-5xl">How Sellora Works</h2>
+          <h2 className="mb-10 font-display text-3xl font-extrabold tracking-tight md:text-5xl">
+            How Sellora Works
+          </h2>
           <div className="grid gap-6 md:grid-cols-3">
-            <motion.div 
+            <motion.div
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -201,11 +208,15 @@ function HomePage() {
               transition={{ delay: 0.1, duration: 0.5 }}
               className="flex flex-col items-center p-8 bg-background rounded-[2rem] border border-border/40 shadow-xl"
             >
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary text-4xl mb-6 shadow-sm">1</div>
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary text-4xl mb-6 shadow-sm">
+                1
+              </div>
               <h3 className="font-display text-xl font-bold mb-2">Create an Account</h3>
-              <p className="text-muted-foreground text-sm">Sign up in seconds and build your verified profile to gain buyer trust.</p>
+              <p className="text-muted-foreground text-sm">
+                Sign up in seconds and build your verified profile to gain buyer trust.
+              </p>
             </motion.div>
-            <motion.div 
+            <motion.div
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -213,11 +224,15 @@ function HomePage() {
               transition={{ delay: 0.2, duration: 0.5 }}
               className="flex flex-col items-center p-8 bg-background rounded-[2rem] border border-border/40 shadow-xl"
             >
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary text-4xl mb-6 shadow-sm">2</div>
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary text-4xl mb-6 shadow-sm">
+                2
+              </div>
               <h3 className="font-display text-2xl font-bold mb-3">Post your Listing</h3>
-              <p className="text-muted-foreground text-base leading-relaxed">Snap a few photos, set a price, and publish your ad instantly for free.</p>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Snap a few photos, set a price, and publish your ad instantly for free.
+              </p>
             </motion.div>
-            <motion.div 
+            <motion.div
               whileHover={{ y: -8, transition: { duration: 0.2 } }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -225,9 +240,13 @@ function HomePage() {
               transition={{ delay: 0.3, duration: 0.5 }}
               className="flex flex-col items-center p-8 bg-background rounded-[2rem] border border-border/40 shadow-xl"
             >
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary text-4xl mb-6 shadow-sm">3</div>
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary text-4xl mb-6 shadow-sm">
+                3
+              </div>
               <h3 className="font-display text-2xl font-bold mb-3">Chat & Sell</h3>
-              <p className="text-muted-foreground text-base leading-relaxed">Negotiate securely via real-time chat and close the deal locally.</p>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Negotiate securely via real-time chat and close the deal locally.
+              </p>
             </motion.div>
           </div>
         </div>
@@ -291,15 +310,15 @@ function HomePage() {
                   </Link>
                 </div>
               )}
-            <motion.div 
+            <motion.div
               initial="hidden"
               animate="visible"
               variants={{
                 hidden: { opacity: 0 },
                 visible: {
                   opacity: 1,
-                  transition: { staggerChildren: 0.1 }
-                }
+                  transition: { staggerChildren: 0.1 },
+                },
               }}
               className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >

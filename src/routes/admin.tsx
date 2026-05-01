@@ -23,7 +23,7 @@ function AdminPage() {
 
   // In a real app, you would check if user.email === 'admin@admin.com' or check a 'role' column.
   // For this MVP, we will just let any logged-in user see the dashboard to demonstrate the feature.
-  
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate({ to: "/auth", search: { redirect: "/admin" } });
@@ -32,22 +32,22 @@ function AdminPage() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     async function fetchStats() {
       // 1. Total Listings
       const { count: listingsCount } = await supabase
         .from("listings")
-        .select("*", { count: 'exact', head: true });
+        .select("*", { count: "exact", head: true });
 
       // 2. Total Profiles (Users)
       const { count: profilesCount } = await supabase
         .from("profiles")
-        .select("*", { count: 'exact', head: true });
+        .select("*", { count: "exact", head: true });
 
       // 3. Total Messages
       const { count: messagesCount } = await supabase
         .from("messages")
-        .select("*", { count: 'exact', head: true });
+        .select("*", { count: "exact", head: true });
 
       setStats({
         listings: listingsCount || 0,
@@ -61,7 +61,11 @@ function AdminPage() {
   }, [user]);
 
   if (authLoading || loading) {
-    return <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">Loading Admin Panel…</div>;
+    return (
+      <div className="container mx-auto px-4 py-20 text-center text-muted-foreground">
+        Loading Admin Panel…
+      </div>
+    );
   }
 
   return (
@@ -112,13 +116,14 @@ function AdminPage() {
           </div>
         </Card>
       </div>
-      
+
       <div className="bg-card border border-border/60 rounded-3xl p-8 shadow-card text-center">
         <h2 className="font-display text-2xl font-bold mb-4">Platform Health</h2>
         <p className="text-muted-foreground max-w-lg mx-auto mb-6">
-          The marketplace is running smoothly. All services are operational. In the full version, you will be able to manage users and delete listings from this panel.
+          The marketplace is running smoothly. All services are operational. In the full version,
+          you will be able to manage users and delete listings from this panel.
         </p>
-        <button 
+        <button
           onClick={() => toast.success("System scan complete. No issues found.")}
           className="bg-primary text-primary-foreground px-6 py-3 rounded-full font-bold shadow-glow hover:scale-105 transition-transform"
         >
