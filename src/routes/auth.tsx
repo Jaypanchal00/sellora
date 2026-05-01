@@ -33,9 +33,12 @@ function AuthPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const search = Route.useSearch();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "phone">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [showOtp, setShowOtp] = useState(false);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -43,19 +46,48 @@ function AuthPage() {
     if (user) navigate({ to: search.redirect, replace: true });
   }, [user, navigate, search.redirect]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    setLoading(true);
+    if (mode === "phone") {
+      if (!showOtp) {
+        // Send OTP
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: phone.startsWith("+") ? phone : `+91${phone}`, // Default to India if no prefix
+        });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          setShowOtp(true);
+          toast.success("OTP sent to your phone!");
+        }
+      } else {
+        // Verify OTP
+        const { error } = await supabase.auth.verifyOtp({
+          phone: phone.startsWith("+") ? phone : `+91${phone}`,
+          token: otp,
+          type: "sms",
+        });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success("Signed in successfully!");
+        }
+      }
+      setLoading(false);
+      return;
+    }
+
     const emailParse = emailSchema.safeParse(email);
     if (!emailParse.success) {
       toast.error(emailParse.error.issues[0].message);
+      setLoading(false);
       return;
     }
     const passParse = passwordSchema.safeParse(password);
     if (!passParse.success) {
       toast.error(passParse.error.issues[0].message);
+      setLoading(false);
       return;
     }
-    setLoading(true);
     if (mode === "signup") {
       const { error } = await supabase.auth.signUp({
         email: emailParse.data,
@@ -99,11 +131,13 @@ function AuthPage() {
         <div className="bg-gradient-brand px-8 py-8 text-center text-brand-foreground">
           <img src={logo} alt="Sellora" width={48} height={48} className="mx-auto h-12 w-12" />
           <h1 className="mt-3 font-display text-2xl font-extrabold">
-            {mode === "signin" ? "Welcome back" : "Join Sellora"}
+            {mode === "signin" ? "Welcome back" : mode === "phone" ? "Sign in with Phone" : "Join Sellora"}
           </h1>
           <p className="mt-1 text-sm text-brand-foreground/85">
             {mode === "signin"
               ? "Sign in to continue your hunt"
+              : mode === "phone"
+              ? "We'll send an OTP to verify you"
               : "Create your free account in seconds"}
           </p>
         </div>
@@ -125,51 +159,107 @@ function AuthPage() {
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          {mode === "signup" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="name">Full name</Label>
-              <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-            </div>
+          {mode === "phone" ? (
+            <>
+              {!showOtp ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+91 99999 99999"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              ) : (
+                <div className="space-y-1.5 text-center">
+                  <Label htmlFor="otp">Enter 6-digit OTP</Label>
+                  <Input
+                    id="otp"
+                    type="text"
+                    placeholder="123456"
+                    maxLength={6}
+                    className="text-center text-2xl tracking-[0.5em]"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowOtp(false)}
+                    className="text-xs text-muted-foreground hover:text-primary mt-2"
+                  >
+                    Change phone number
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {mode === "signup" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Full name</Label>
+                  <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </>
           )}
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
 
           <Button
             type="submit"
             disabled={loading}
             className="w-full rounded-full bg-gradient-brand text-brand-foreground shadow-glow"
           >
-            {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {loading ? "Please wait…" : mode === "phone" ? (showOtp ? "Verify OTP" : "Send OTP") : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
-            {mode === "signin" ? "New to Sellora?" : "Already have an account?"}{" "}
+          <div className="flex flex-col gap-2 text-center text-sm text-muted-foreground">
+            <p>
+              {mode === "signin" ? "New to Sellora?" : "Already have an account?"}{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode(mode === "signin" ? "signup" : "signin");
+                  setShowOtp(false);
+                }}
+                className="font-semibold text-primary hover:underline"
+              >
+                {mode === "signin" ? "Create an account" : "Sign in"}
+              </button>
+            </p>
             <button
               type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="font-semibold text-primary hover:underline"
+              onClick={() => {
+                setMode(mode === "phone" ? "signin" : "phone");
+                setShowOtp(false);
+              }}
+              className="font-semibold text-muted-foreground hover:text-primary transition-colors"
             >
-              {mode === "signin" ? "Create an account" : "Sign in"}
+              {mode === "phone" ? "Sign in with Email" : "Sign in with Phone Number"}
             </button>
-          </p>
+          </div>
         </form>
       </Card>
     </div>
