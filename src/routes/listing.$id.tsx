@@ -26,7 +26,7 @@ function ListingDetail() {
   const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
   const [chatLoading, setChatLoading] = useState(false);
-  const [reviews, setReviews] = useState<Tables<"reviews">[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [similarListings, setSimilarListings] = useState<Tables<"listings">[]>([]);
 
   useEffect(() => {
@@ -386,7 +386,7 @@ function ReviewDialog({
 }: {
   targetId: string;
   listingId: string;
-  onSuccess: (r: Tables<"reviews">) => void;
+  onSuccess: (r: any) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(5);
@@ -487,7 +487,7 @@ function OfferDialog({
   chatLoading,
   onChatStarted,
 }: {
-  listing: Tables<"listings">;
+  listing: any;
   sellerId: string;
   chatLoading: boolean;
   onChatStarted: () => void;

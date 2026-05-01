@@ -97,7 +97,7 @@ function SellPage() {
       const urls: string[] = [];
       for (const file of files) {
         const ext = file.name.split(".").pop() || "jpg";
-        const path = `${user.id}/${window.crypto.randomUUID()}.${ext}`;
+        const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("listings")
           .upload(path, file, { contentType: file.type, upsert: false });
