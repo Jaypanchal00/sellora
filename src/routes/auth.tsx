@@ -181,13 +181,13 @@ function AuthPage() {
                 </div>
               ) : (
                 <div className="space-y-1.5 text-center">
-                  <Label htmlFor="otp">Enter 6-digit OTP from your Email</Label>
+                  <Label htmlFor="otp">Enter OTP from your Email</Label>
                   <Input
                     id="otp"
                     type="text"
-                    placeholder="123456"
-                    maxLength={6}
-                    className="text-center text-2xl tracking-[0.5em]"
+                    placeholder="Enter code"
+                    maxLength={8}
+                    className="text-center text-2xl tracking-[0.2em]"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     required
