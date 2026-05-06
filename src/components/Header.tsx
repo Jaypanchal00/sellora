@@ -22,7 +22,6 @@ import {
   LogOut,
   Compass,
 } from "lucide-react";
-import logo from "@/assets/sellora-logo.png";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
