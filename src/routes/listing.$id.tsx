@@ -531,7 +531,7 @@ function OfferDialog({
     }
 
     // 2. Send the offer message
-    const offerMessage = `Hi! I would like to make an offer of ${formatPrice(Number(offerPrice), listing.currency || "USD")} for "${listing.title}". Is this acceptable?`;
+    const offerMessage = `Hi! I would like to make an offer of ${formatPrice(Number(offerPrice), listing.currency || "INR")} for "${listing.title}". Is this acceptable?`;
     await supabase.from("messages").insert({
       conversation_id: convId,
       sender_id: user.id,
@@ -566,12 +566,12 @@ function OfferDialog({
           <div className="bg-card border border-border/60 rounded-3xl p-6 w-full max-w-sm shadow-card relative">
             <h2 className="font-display text-2xl font-bold mb-2">Make an Offer</h2>
             <p className="text-sm text-muted-foreground mb-5">
-              Seller's price is {formatPrice(Number(listing.price), listing.currency || "USD")}.
+              Seller's price is {formatPrice(Number(listing.price), listing.currency || "INR")}.
             </p>
 
             <div className="relative mb-5">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
-                {listing.currency === "INR" ? "₹" : listing.currency === "EUR" ? "€" : "$"}
+                ₹
               </span>
               <input
                 type="number"

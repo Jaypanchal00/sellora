@@ -55,7 +55,7 @@ export function ListingCard({ listing, isWishlisted, onToggleWishlist }: Listing
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-1 font-semibold text-foreground md:text-lg">{listing.title}</h3>
           <p className="shrink-0 font-display font-bold text-foreground md:text-lg">
-            {formatPrice(Number(listing.price), listing.currency || "USD")}
+            {formatPrice(Number(listing.price), listing.currency || "INR")}
           </p>
         </div>
         <div className="flex items-center text-sm text-muted-foreground">

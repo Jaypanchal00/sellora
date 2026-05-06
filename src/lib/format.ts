@@ -1,12 +1,12 @@
-export function formatPrice(value: number, currency: string = "USD") {
+export function formatPrice(value: number, _currency?: string) {
   try {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency,
+      currency: "INR",
       maximumFractionDigits: 0,
     }).format(value);
   } catch {
-    return `$${value}`;
+    return `₹${value}`;
   }
 }
 
