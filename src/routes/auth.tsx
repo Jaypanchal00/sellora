@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { Mail, Lock, User as UserIcon, ArrowRight, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -23,32 +24,29 @@ export const Route = createFileRoute("/auth")({
   }),
 });
 
-const emailSchema = z.string().trim().email({ message: "Please enter a valid email" }).max(255);
-const passwordSchema = z
-  .string()
-  .min(6, { message: "Password must be at least 6 characters" })
-  .max(128);
+const emailSchema = z.string().trim().email({ message: "Please enter a valid email address" }).max(255);
+const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" }).max(128);
 
 function AuthPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const search = Route.useSearch();
+  
+  // "signin" or "signup"
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [method, setMethod] = useState<"password" | "otp">("password");
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [otp, setOtp] = useState("");
-  const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) navigate({ to: search.redirect, replace: true });
   }, [user, navigate, search.redirect]);
 
-  const handlePasswordAuth = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     const emailParse = emailSchema.safeParse(email);
     if (!emailParse.success) return toast.error(emailParse.error.issues[0].message);
     
@@ -56,66 +54,45 @@ function AuthPage() {
     if (!passParse.success) return toast.error(passParse.error.issues[0].message);
 
     setLoading(true);
+
     if (mode === "signup") {
       if (!fullName.trim()) {
         setLoading(false);
         return toast.error("Please enter your full name");
       }
-      const { error } = await supabase.auth.signUp({
+      
+      const { data, error } = await supabase.auth.signUp({
         email: emailParse.data,
         password: passParse.data,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
           data: { full_name: fullName.trim() },
         },
       });
-      if (error) toast.error(error.message);
-      else toast.success("Check your email for confirmation!");
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        // Sign out immediately to prevent auto-login
+        await supabase.auth.signOut();
+        toast.success("Account created successfully! Please sign in.");
+        setMode("signin");
+        setPassword(""); // Clear password for security
+      }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email: emailParse.data,
         password: passParse.data,
       });
-      if (error) toast.error(error.message);
-      else toast.success("Welcome back!");
-    }
-    setLoading(false);
-  };
 
-  const handleOtpAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const emailParse = emailSchema.safeParse(email);
-    if (!emailParse.success) return toast.error(emailParse.error.issues[0].message);
-
-    setLoading(true);
-    if (!showOtp) {
-      if (mode === "signup" && !fullName.trim()) {
-        setLoading(false);
-        return toast.error("Please enter your full name");
-      }
-      
-      const { error } = await supabase.auth.signInWithOtp({
-        email: emailParse.data,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: mode === "signup" ? { full_name: fullName.trim() } : undefined,
-          shouldCreateUser: mode === "signup", // Only create if in signup mode
-        }
-      });
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Invalid email or password. Please create an account first if you don't have one.");
+        } else {
+          toast.error(error.message);
+        }
       } else {
-        setShowOtp(true);
-        toast.success("OTP code sent to your email!");
+        toast.success("Welcome back to Sellora!");
       }
-    } else {
-      const { error } = await supabase.auth.verifyOtp({
-        email: emailParse.data,
-        token: otp,
-        type: "email",
-      });
-      if (error) toast.error(error.message);
-      else toast.success("Signed in successfully!");
     }
     setLoading(false);
   };
@@ -133,109 +110,151 @@ function AuthPage() {
   };
 
   return (
-    <div className="container mx-auto flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-10">
-      <Card className="w-full max-w-md overflow-hidden border-border/60 p-0 shadow-card">
-        <div className="bg-gradient-brand px-8 py-8 text-center text-brand-foreground">
-          <h1 className="font-display text-3xl font-black uppercase tracking-tighter">
-            Sellora
-          </h1>
-          <h2 className="mt-2 font-display text-xl font-bold uppercase tracking-tight">
-            {mode === "signin" ? "Welcome Back" : "Join Us"}
-          </h2>
-          <p className="mt-1 text-sm text-brand-foreground/85">
-            {mode === "signin" ? "Sign in to continue" : "Create your account in seconds"}
-          </p>
-        </div>
-
-        <div className="p-6">
-          <Tabs value={method} onValueChange={(v) => { setMethod(v as any); setShowOtp(false); }} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-full mb-6">
-              <TabsTrigger value="password" stroke-width="2" className="rounded-full">Password</TabsTrigger>
-              <TabsTrigger value="otp" className="rounded-full">OTP Code</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="password">
-              <form onSubmit={handlePasswordAuth} className="space-y-4">
-                {mode === "signup" && (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-                  </div>
-                )}
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-                <Button type="submit" disabled={loading} className="w-full rounded-full bg-gradient-brand text-brand-foreground shadow-glow mt-2">
-                  {loading ? "Processing..." : mode === "signin" ? "Sign In" : "Sign Up"}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="otp">
-              <form onSubmit={handleOtpAuth} className="space-y-4">
-                {!showOtp ? (
-                  <>
-                    {mode === "signup" && (
-                      <div className="space-y-1.5">
-                        <Label htmlFor="otp_name">Full Name</Label>
-                        <Input id="otp_name" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-                      </div>
-                    )}
-                    <div className="space-y-1.5">
-                      <Label htmlFor="otp_email">Email</Label>
-                      <Input id="otp_email" type="email" placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    </div>
-                    <Button type="submit" disabled={loading} className="w-full rounded-full bg-gradient-brand text-brand-foreground shadow-glow mt-2">
-                      {loading ? "Sending..." : "Get OTP Code"}
-                    </Button>
-                  </>
-                ) : (
-                  <div className="space-y-4 text-center">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="otp_input">Verification Code</Label>
-                      <Input id="otp_input" type="text" maxLength={8} className="text-center text-2xl font-bold tracking-[0.2em]" placeholder="000000" value={otp} onChange={(e) => setOtp(e.target.value)} required />
-                    </div>
-                    <Button type="submit" disabled={loading} className="w-full rounded-full bg-gradient-brand text-brand-foreground shadow-glow">
-                      {loading ? "Verifying..." : "Verify & Sign In"}
-                    </Button>
-                    <button type="button" onClick={() => setShowOtp(false)} className="text-xs text-muted-foreground hover:text-primary">Change email address</button>
-                  </div>
-                )}
-              </form>
-            </TabsContent>
-          </Tabs>
-
-          <div className="mt-6">
-            <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
-              <div className="h-px flex-1 bg-border" />
-              OR CONTINUE WITH
-              <div className="h-px flex-1 bg-border" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-[1000px] bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+        
+        {/* Left Side - Branding (Hidden on mobile) */}
+        <div className="hidden md:flex md:w-5/12 bg-blue-600 p-12 flex-col justify-between relative overflow-hidden">
+          {/* Decorative shapes */}
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-blue-500 opacity-50 blur-3xl" />
+          <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-blue-400 opacity-50 blur-3xl" />
+          
+          <div className="relative z-10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm mb-6">
+              <span className="font-bold text-2xl leading-none mt-[-2px]">S</span>
             </div>
-            <Button type="button" variant="outline" onClick={handleGoogle} disabled={loading} className="w-full rounded-full">
-              <GoogleIcon /> Google
-            </Button>
+            <h1 className="text-white text-4xl font-extrabold tracking-tight mb-4">
+              {mode === "signin" ? "Welcome back to Sellora." : "Join the Sellora community."}
+            </h1>
+            <p className="text-blue-100 text-lg">
+              {mode === "signin" 
+                ? "Discover great deals, connect with sellers, and buy with confidence."
+                : "Create an account to start buying and selling locally with thousands of users."}
+            </p>
           </div>
-
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "signin" ? "New to Sellora?" : "Already have an account?"}{" "}
-            <button type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setShowOtp(false); }} className="font-semibold text-primary hover:underline">
-              {mode === "signin" ? "Create an account" : "Sign in instead"}
-            </button>
-          </p>
+          
+          <div className="relative z-10 text-blue-200 text-sm font-medium">
+            © {new Date().getFullYear()} Sellora Inc.
+          </div>
         </div>
-      </Card>
+
+        {/* Right Side - Auth Form */}
+        <div className="w-full md:w-7/12 p-8 md:p-16 flex flex-col justify-center bg-white relative">
+          <div className="max-w-[400px] w-full mx-auto">
+            
+            {/* Mobile Logo */}
+            <div className="flex md:hidden h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm mb-8">
+              <span className="font-bold text-2xl leading-none mt-[-2px]">S</span>
+            </div>
+
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              {mode === "signin" ? "Sign in" : "Create an account"}
+            </h2>
+            <p className="text-slate-500 mb-8">
+              {mode === "signin" 
+                ? "Don't have an account?" 
+                : "Already have an account?"}{" "}
+              <button 
+                onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                className="text-blue-600 font-bold hover:underline"
+              >
+                {mode === "signin" ? "Create one" : "Sign in"}
+              </button>
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-slate-700 font-bold">Full Name</Label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Input 
+                      id="name" 
+                      placeholder="John Doe" 
+                      value={fullName} 
+                      onChange={(e) => setFullName(e.target.value)} 
+                      required 
+                      className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-600"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-700 font-bold">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="name@example.com" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    required 
+                    className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-slate-700 font-bold">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="••••••••"
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                    required 
+                    className="pl-10 h-12 bg-slate-50 border-slate-200 text-slate-900 rounded-xl focus-visible:ring-blue-600"
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base mt-2 shadow-sm transition-all"
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    {mode === "signin" ? "Sign In" : "Create Account"}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-8 flex items-center gap-4">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Or continue with</span>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleGoogle} 
+              disabled={loading} 
+              className="w-full h-12 mt-6 rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold shadow-sm"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </Button>
+            
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 function GoogleIcon() {
   return (
-    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
+    <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" aria-hidden>
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z" />
       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
       <path fill="#FBBC05" d="M5.84 14.12A6.99 6.99 0 0 1 5.47 12c0-.74.13-1.45.36-2.12V7.04H2.18A11 11 0 0 0 1 12c0 1.77.42 3.45 1.18 4.96l3.66-2.84z" />

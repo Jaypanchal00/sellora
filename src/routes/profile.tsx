@@ -106,19 +106,19 @@ function ProfilePage() {
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-10">
-      <h1 className="font-display text-3xl font-extrabold">Profile</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Tell buyers a bit about yourself.</p>
+      <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Profile</h1>
+      <p className="mt-1 text-sm text-slate-500">Tell buyers a bit about yourself.</p>
 
-      <Card className="mt-6 border-border/60 p-6 shadow-card">
-        <div className="mb-6 flex items-center gap-4">
-          <Avatar className="h-20 w-20">
+      <Card className="mt-6 border-slate-200 bg-white shadow-sm rounded-xl p-6 md:p-8">
+        <div className="mb-8 flex items-center gap-5">
+          <Avatar className="h-20 w-20 ring-4 ring-slate-50">
             <AvatarImage src={profile?.avatar_url ?? undefined} />
-            <AvatarFallback className="bg-gradient-brand text-brand-foreground text-xl font-semibold">
+            <AvatarFallback className="bg-blue-600 text-white text-xl font-bold">
               {(fullName || user.email || "U")[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition-base hover:bg-muted">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {uploading ? "Uploading…" : "Change photo"}
               <input
@@ -129,61 +129,67 @@ function ProfilePage() {
                 disabled={uploading}
               />
             </label>
-            <p className="mt-1 text-xs text-muted-foreground">PNG or JPG, up to 3MB</p>
+            <p className="mt-2 text-xs text-slate-500 font-medium">PNG or JPG, up to 3MB</p>
           </div>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" value={user.email ?? ""} disabled />
+        <form onSubmit={handleSave} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-slate-700 font-bold">Email Address</Label>
+            <Input id="email" value={user.email ?? ""} disabled className="bg-slate-100 border-slate-200 text-slate-500 rounded-lg h-11" />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="name">Full name</Label>
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-slate-700 font-bold">Full Name</Label>
             <Input
               id="name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               maxLength={120}
+              className="bg-slate-50 border-slate-200 text-slate-900 rounded-lg h-11 focus-visible:ring-blue-600"
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="phone">Phone</Label>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-slate-700 font-bold">Phone Number</Label>
               <Input
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 maxLength={32}
+                className="bg-slate-50 border-slate-200 text-slate-900 rounded-lg h-11 focus-visible:ring-blue-600"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="loc">Location</Label>
+            <div className="space-y-2">
+              <Label htmlFor="loc" className="text-slate-700 font-bold">Location</Label>
               <Input
                 id="loc"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 maxLength={120}
+                className="bg-slate-50 border-slate-200 text-slate-900 rounded-lg h-11 focus-visible:ring-blue-600"
               />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="bio">Bio</Label>
+          <div className="space-y-2">
+            <Label htmlFor="bio" className="text-slate-700 font-bold">Bio</Label>
             <Textarea
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={4}
               maxLength={500}
+              className="bg-slate-50 border-slate-200 text-slate-900 rounded-lg focus-visible:ring-blue-600 resize-none"
             />
           </div>
-          <Button
-            type="submit"
-            disabled={saving}
-            className="rounded-full bg-gradient-brand text-brand-foreground shadow-glow"
-          >
-            {saving ? "Saving…" : "Save changes"}
-          </Button>
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 h-11 shadow-sm"
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </Button>
+          </div>
         </form>
       </Card>
     </div>
