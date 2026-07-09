@@ -126,6 +126,39 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          created_at: string;
+          id: string;
+          link: string | null;
+          message: string;
+          read_at: string | null;
+          title: string;
+          type: Database["public"]["Enums"]["notification_type"];
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          link?: string | null;
+          message: string;
+          read_at?: string | null;
+          title: string;
+          type: Database["public"]["Enums"]["notification_type"];
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          link?: string | null;
+          message?: string;
+          read_at?: string | null;
+          title?: string;
+          type?: Database["public"]["Enums"]["notification_type"];
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -279,6 +312,7 @@ export type Database = {
         | "hobbies"
         | "other";
       listing_status: "active" | "sold" | "pending" | "removed";
+      notification_type: "message" | "price_drop" | "item_sold" | "system";
     };
     CompositeTypes: {
       [_ in never]: never;

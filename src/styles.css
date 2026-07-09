@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -217,4 +218,12 @@
   .ring-brand {
     box-shadow: 0 0 0 3px oklch(0.55 0.22 305 / 0.25);
   }
+}
+
+/* Fix Leaflet map tiles rendering with Tailwind CSS */
+.leaflet-container img.leaflet-tile {
+  max-width: none !important;
+}
+.leaflet-container {
+  z-index: 10 !important;
 }
