@@ -20,16 +20,29 @@ export function formatRelativeTime(date: string | Date) {
   return d.toLocaleDateString();
 }
 
-export const CATEGORIES = [
-  { value: "electronics", label: "Electronics", emoji: "📱" },
-  { value: "vehicles", label: "Vehicles", emoji: "🚗" },
-  { value: "property", label: "Property", emoji: "🏠" },
-  { value: "fashion", label: "Fashion", emoji: "👗" },
-  { value: "home", label: "Home & Garden", emoji: "🛋️" },
-  { value: "jobs", label: "Jobs", emoji: "💼" },
-  { value: "services", label: "Services", emoji: "🛠️" },
-  { value: "hobbies", label: "Hobbies", emoji: "🎨" },
-  { value: "other", label: "Other", emoji: "✨" },
-] as const;
+import {
+  Smartphone,
+  Car,
+  Home,
+  Shirt,
+  Sofa,
+  Briefcase,
+  Wrench,
+  Palette,
+  Sparkles,
+  LucideIcon
+} from "lucide-react";
 
-export type CategoryValue = (typeof CATEGORIES)[number]["value"];
+export type CategoryValue = "electronics" | "vehicles" | "property" | "fashion" | "home" | "jobs" | "services" | "hobbies" | "other";
+
+export const CATEGORIES: { value: CategoryValue; label: string; icon: LucideIcon }[] = [
+  { value: "electronics", label: "Electronics", icon: Smartphone },
+  { value: "vehicles", label: "Vehicles", icon: Car },
+  { value: "property", label: "Property", icon: Home },
+  { value: "fashion", label: "Fashion", icon: Shirt },
+  { value: "home", label: "Home & Garden", icon: Sofa },
+  { value: "jobs", label: "Jobs", icon: Briefcase },
+  { value: "services", label: "Services", icon: Wrench },
+  { value: "hobbies", label: "Hobbies", icon: Palette },
+  { value: "other", label: "Other", icon: Sparkles },
+];
