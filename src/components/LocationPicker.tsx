@@ -26,7 +26,7 @@ interface Suggestion {
   lon: string;
 }
 
-function MapEvents({ setPosition, onLocationSelected }: { 
+function MapEvents({ setPosition, onLocationSelected }: {
   setPosition: (pos: [number, number]) => void;
   onLocationSelected: (lat: number, lng: number) => void;
 }) {
@@ -45,7 +45,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  
+
   const debouncedQuery = useDebounce(query, 500);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -88,7 +88,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
             const city = addr.city || addr.town || addr.village || addr.county || "";
             const state = addr.state || "";
             const name = addr.road || addr.suburb || addr.neighbourhood || "";
-            
+
             let displayName = d.display_name;
             if (city && state) {
               displayName = name ? `${name}, ${city}, ${state}` : `${city}, ${state}`;
@@ -99,7 +99,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
               lon: d.lon,
             };
           });
-          
+
           setSuggestions(formatted);
           setShowDropdown(formatted.length > 0);
         }
@@ -132,7 +132,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
         const city = addr.city || addr.town || addr.village || addr.county || "";
         const state = addr.state || "";
         const name = addr.road || addr.suburb || addr.neighbourhood || "";
-        
+
         let simpleName = data.display_name;
         if (city && state) {
           simpleName = name ? `${name}, ${city}, ${state}` : `${city}, ${state}`;
@@ -199,7 +199,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
             )}
           </div>
         </div>
-        
+
         {showDropdown && suggestions.length > 0 && (
           <div className="absolute top-full mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden max-h-60 overflow-y-auto">
             {suggestions.map((s, i) => (
@@ -218,22 +218,22 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       </div>
 
       <div className="h-[250px] w-full rounded-xl overflow-hidden border border-slate-200 z-10 relative bg-slate-100">
-        <MapContainer 
-          key={`${position[0]}-${position[1]}`} 
-          center={position} 
-          zoom={13} 
-          scrollWheelZoom={true} 
+        <MapContainer
+          key={`${position[0]}-${position[1]}`}
+          center={position}
+          zoom={13}
+          scrollWheelZoom={true}
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
             attribution='&copy; Google Maps'
             url="https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-            subdomains={['mt0','mt1','mt2','mt3']}
+            subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
           />
           <Marker position={position} />
-          <MapEvents 
-            setPosition={setPosition} 
-            onLocationSelected={reverseGeocode} 
+          <MapEvents
+            setPosition={setPosition}
+            onLocationSelected={reverseGeocode}
           />
         </MapContainer>
         <div className="absolute bottom-2 right-2 z-[400] bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm text-xs font-semibold text-slate-600 pointer-events-none">
