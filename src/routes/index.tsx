@@ -120,10 +120,10 @@ function HomePage() {
               alt="Buy, Sell & Discover Great Deals Near You" 
               className="w-full h-auto object-cover"
             />
-            <div className="absolute bottom-4 left-6 sm:bottom-6 sm:left-10 lg:bottom-8 lg:left-14">
+            <div className="absolute bottom-2 left-3 sm:bottom-6 sm:left-10 lg:bottom-8 lg:left-14">
               <Button
                 onClick={() => navigate({ to: "/search" })}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-5 sm:px-8 sm:py-6 font-extrabold text-sm sm:text-base shadow-xl transition-transform hover:-translate-y-1"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg sm:rounded-xl px-4 py-2.5 sm:px-8 sm:py-6 font-extrabold text-xs sm:text-base shadow-md sm:shadow-xl transition-transform hover:-translate-y-1"
               >
                 Explore Now
               </Button>
