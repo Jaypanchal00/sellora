@@ -138,7 +138,7 @@ function ListingDetail() {
   const sellerInitial = (seller?.full_name ?? "U")[0]?.toUpperCase();
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-8 bg-white min-h-screen">
+    <div className="container mx-auto px-4 lg:px-8 py-8 min-h-screen">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-slate-500 font-medium mb-6">
         <Link to="/" className="text-blue-600 hover:underline">
