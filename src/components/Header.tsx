@@ -102,7 +102,7 @@ export function Header() {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(10);
-      
+
       if (!error && data) {
         setNotifications(data);
         setUnreadNotifications(data.filter(n => !n.read_at).length);
@@ -149,7 +149,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-sm">
       <div className="container mx-auto flex h-[72px] items-center justify-between gap-4 px-4 lg:px-8">
-        
+
         {/* LEFT: Logo & Location & Mobile Menu */}
         <div className="flex items-center gap-4 lg:gap-6">
           {/* Mobile Menu */}
@@ -234,8 +234,8 @@ export function Header() {
               SELLORA
             </span>
           </Link>
-          
-          <button 
+
+          <button
             onClick={handleLocateMe}
             disabled={locationLoading}
             className="hidden lg:flex items-center gap-1.5 text-[13px] font-bold text-slate-700 hover:text-slate-900 cursor-pointer transition-colors max-w-[150px] disabled:opacity-70"
@@ -278,7 +278,7 @@ export function Header() {
               </span>
             )}
           </Link>
-          
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -321,7 +321,7 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <button 
+            <button
               onClick={() => navigate({ to: "/auth", search: { redirect: "/" } })}
               className="hidden md:flex items-center gap-1.5 text-[13px] font-bold text-slate-700 hover:text-blue-600 transition-colors"
             >
