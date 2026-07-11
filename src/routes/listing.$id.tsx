@@ -138,34 +138,35 @@ function ListingDetail() {
   const sellerInitial = (seller?.full_name ?? "U")[0]?.toUpperCase();
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-8 min-h-screen">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-500 font-medium mb-6">
-        <Link to="/" className="text-blue-600 hover:underline">
-          Home
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <Link to="/search" search={{ category: listing.category }} className="text-blue-600 hover:underline capitalize">
-          {listing.category}
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-slate-800">{listing.title}</span>
-      </div>
+    <div className="min-h-screen bg-white w-full">
+      <div className="container mx-auto px-4 lg:px-8 py-8">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-medium mb-6">
+          <Link to="/" className="text-blue-600 hover:underline">
+            Home
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <Link to="/search" search={{ category: listing.category }} className="text-blue-600 hover:underline capitalize">
+            {listing.category}
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-slate-800">{listing.title}</span>
+        </div>
 
-      <div className="grid gap-8 lg:gap-12 lg:grid-cols-12">
-        {/* Left Col: Image Gallery */}
-        <div className="lg:col-span-7">
-          <div className="relative aspect-[4/3] md:aspect-square overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center p-4 md:p-8">
-            {/* Featured Badge */}
-            <div className="absolute top-4 left-4 z-10 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-              FEATURED
-            </div>
+        <div className="grid gap-8 lg:gap-12 lg:grid-cols-12">
+          {/* Left Col: Image Gallery */}
+          <div className="lg:col-span-7">
+            <div className="relative aspect-[4/3] md:aspect-square overflow-hidden rounded-2xl bg-white border border-slate-200 flex items-center justify-center p-4 md:p-8">
+              {/* Featured Badge */}
+              <div className="absolute top-4 left-4 z-10 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                FEATURED
+              </div>
 
-            {currentImg ? (
-              <img src={currentImg} alt={listing.title} className="h-full w-full object-contain mix-blend-multiply" />
-            ) : (
-              <div className="text-7xl text-slate-300">📦</div>
-            )}
+              {currentImg ? (
+                <img src={currentImg} alt={listing.title} className="h-full w-full object-contain mix-blend-multiply" />
+              ) : (
+                <div className="text-7xl text-slate-300">📦</div>
+              )}
             
             {images.length > 1 && (
               <>
@@ -323,6 +324,7 @@ function ListingDetail() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
