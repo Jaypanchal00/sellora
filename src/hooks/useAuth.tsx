@@ -18,7 +18,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // CRITICAL: set up listener FIRST, then fetch existing session
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === "SIGNED_IN") {
+        if (window.location.hash.includes("access_token")) {
+          // Clear the hash from the URL so it doesn't look like an error to the user
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        }
+      }
       setSession(newSession);
       setUser(newSession?.user ?? null);
       setLoading(false);
